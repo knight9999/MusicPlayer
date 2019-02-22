@@ -47,7 +47,7 @@ class MMLParser {
         } else if (m[2] === '-') {
           keyNum = keyNum - 1;
         }
-        let t = this.calcTime(m[3]) * (60 / this.tempo);;
+        let t = this.calcTime(m[3]) * (60 / this.tempo);
         if (m[4]) {
           t = t * 1.5;
         }
@@ -57,7 +57,7 @@ class MMLParser {
       }
       m = s.match(/^(R)(\d*)/);
       if (m) {
-        let t = this.calcTime(m[2]);
+        let t = this.calcTime(m[2]) * (60 / this.tempo);
         result.push( { key: null, time: t, volume :this.volume, prevType: 0, postType: 0 } );
         s = s.substr(m[0].length);
         continue;

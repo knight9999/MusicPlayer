@@ -22,6 +22,7 @@ class MusicPlayer {
         return acc;
       }, []);
     });
+    console.log(list.length);
     const bytes = this.gen.addHeader( this.gen.mergeWaves(list) );
     let str = "";
     for (let i=0; i<bytes.length; i++) { str += String.fromCharCode(bytes[i]); }
