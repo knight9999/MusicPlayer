@@ -1,0 +1,207 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta http-equiv="Content-Security-Policy" content="default-src * data: gap: content: https://ssl.gstatic.com; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval'">
+    <script src="js/WavGenerator.js"></script>
+    <script src="js/MMLParser.js"></script>
+    <script src="js/MusicPlayer.js"></script>
+    <script>
+
+      function getSoundFunction(soundNum) {
+        const soundF1 = (a) => Math.sin(a);
+        const soundF2 = (a) => {
+          const b = a / (2*Math.PI) - Math.floor( a/ (2*Math.PI) );
+          const m = 0.01;
+          const adjust = 0.5;
+          return (b < m ? b/m : (
+            (b < 0.5 - m ) ? 1 : (
+              (b < 0.5 + m ) ? (1.0 - (b - (0.5 - m))/m) : (
+                (b < 1.0 - m ) ? -1 : (
+                  - 1.0  + (b - (1.0-m))/m
+                )
+              )
+            )
+          ))*adjust;         
+        };
+        const soundF3 = (a) => {
+          const b = a / (2*Math.PI) - Math.floor( a/ (2*Math.PI) );
+          const m = 0.01;
+          const adjust = 0.70;
+          return (b < 0.5 - m) ? (b / (0.5 - m)) : (
+                    (b < 0.5 + m) ?  (1 - (b - (0.5 - m)) / m)  : (
+                      -1.0 + (b - (0.5 + m))/(0.5 - m)
+                    )
+          )*adjust;
+        };
+        const soundFS = [soundF1, soundF2, soundF3];
+        const soundF = soundFS[soundNum-1];
+        return soundF;
+      }
+
+      function drawSoundWave(soundNum) {
+        const soundF = getSoundFunction(soundNum);
+        let canvas = document.getElementById('sound' + soundNum);
+        let context = canvas.getContext('2d');
+        context.fillStyle = "#ffffff";
+        context.fillRect(0,0,199,99);
+        context.strokeStyle = "#ff0000";
+        context.moveTo(0, 50);
+        let a = 0;
+        for (let i=0; i<200; i++) {
+          a = (i/200)*2.0*Math.PI;
+          context.lineTo(i, 50 - soundF(a) * 50);
+          context.stroke();
+        }
+      }
+
+      function drawSoundWaves() {
+        drawSoundWave(1);
+        drawSoundWave(2);
+        drawSoundWave(3);
+      }
+
+      function playSampleSound(soundNum) {
+        const soundF = getSoundFunction(soundNum);
+        const gen = new WavGenerator(11025, true);
+        const wave1 = gen.createWave(40, 0.5, 0.025, 0.05, 1, soundF); // ド
+        const wave2 = gen.createWave(42, 0.5, 0.025, 0.05, 1, soundF); // レ
+        const wave3 = gen.createWave(44, 0.5, 0.025, 0.05, 1, soundF); // ミ
+        const wave4 = gen.createWave(45, 0.5, 0.025, 0.05, 1, soundF); // ファ
+        const wave5 = gen.createWave(47, 0.5, 0.025, 0.05, 1, soundF); // ソ
+        const wave6 = gen.createWave(49, 0.5, 0.025, 0.05, 1, soundF); // ラ
+        const wave7 = gen.createWave(51, 0.5, 0.025, 0.05, 1, soundF); // シ
+        const wave8 = gen.createWave(52, 0.5, 0.025, 0.05, 1, soundF); // ド
+        let bytes = gen.addHeader( 
+          wave1.concat(wave2).concat(wave3).concat(wave4).concat(wave5)
+          .concat(wave6).concat(wave7).concat(wave8)
+        );
+        let str = "";
+        for (let i=0; i<bytes.length; i++) { str += String.fromCharCode(bytes[i]); }
+        let audio=new Audio("data:audio/wav;base64,"+btoa(str));
+        audio.play();
+        return false;
+      }
+
+      function playKagomeKagome2(is16Bit, soundNum) {
+        const soundF = getSoundFunction(soundNum);
+        const gen = new WavGenerator(11025, is16Bit);
+        const player = new MusicPlayer(gen, soundF);
+        const mml = "T120V60A2ABAAARAA8A8AG8G8AA8G8ER"
+                  + "AGAGAA8G8E2AAABAAAR"
+                  + "AG8G8AG8G8AA8G8E2A8A8A8A8ABA.G8AR";
+        player.play([mml]);
+      }
+
+      function playSimple(soundNum) {
+        const soundF = getSoundFunction(soundNum);
+        const gen = new WavGenerator(11025, false);
+        const player = new MusicPlayer(gen, soundF);
+        const mml1 = "T120V50C";
+        player.play([mml1]);
+      }
+
+      function playHarmony(is16Bit, soundNum) {
+        const soundF = getSoundFunction(soundNum);
+        const gen = new WavGenerator(11025, is16Bit);
+        const player = new MusicPlayer(gen, soundF);
+        const mml1 = "T120V100CRRC2";
+        const mml2 = "T120V100RERE2";
+        const mml3 = "T120V100RRGG2";
+        player.play([mml1, mml2, mml3]);
+      }
+
+      function playKiraKira(is16Bit, p1, p2, p3, soundNum) {
+        const soundF = getSoundFunction(soundNum);
+        const gen = new WavGenerator(11025, is16Bit);
+        const player = new MusicPlayer(gen, soundF);
+        const mml1 = "T120V100O4C2C2G2G2A2A2G1F2F2E2E2D2D2C1" +
+        "G2G2F2F2E2E2D1G2G2F2F2E2E2D1" + 
+        "C2C2G2G2A2A2G1F2F2E2E2D2D2C1";
+        const mml2 = "T120V100O3G1G1G1G1G1G1G1G1" +
+        "G1G1G1G1G1G1G1G1" +
+        "G1G1G1G1G1G1G1G1";
+        const mml3 = "T120V100O3C1E1F1E1F1E1D1C1" + 
+        "E1F1E1F1E1F1E1F1" +
+        "C1E1F1E1F1E1D1C1";
+        let mmls = [];
+        if (p1) { mmls.push(mml1); }
+        if (p2) { mmls.push(mml2); }
+        if (p3) { mmls.push(mml3); }
+        player.play([mml1, mml2, mml3]);
+      }
+
+      function playTetris(is16Bit) {
+        const soundF = getSoundFunction(1);
+        const gen = new WavGenerator(11025, is16Bit);
+        const player = new MusicPlayer(gen, soundF);
+        const mml1 = "T120V100O5E2<B4>C4D2C4<B4" +
+        "A2A4>C4E2D4C4" +
+        "<B2B4>C4D2E2" +
+        "C2<A2A1" +
+        "R4>D4R4F4A2G4F4" +
+        "E2.C4E2D4C4" +
+        "<B2B4>C4D2E2";
+        player.play([mml1]);
+
+      }
+    </script>
+  </head>
+  <body>
+    <br />
+      <h1>マイ・オルゴール</h1>
+      <div>
+        <p>基本波形 1,2,3</p>
+        <div></div><canvas id="sound1" width="200" height="100"></canvas></div>
+        <div></div><canvas id="sound2" width="200" height="100"></canvas></div>
+        <div></div><canvas id="sound3" width="200" height="100"></canvas></div>
+        <button onclick="drawSoundWaves();">Click</button>
+      </div>
+
+      <div>
+      <p>音のテスト</p>
+        <button onclick="playSampleSound(1);">Click 1</button>
+        <button onclick="playSampleSound(2);">Click 2</button>
+        <button onclick="playSampleSound(3);">Click 3</button>
+      </div>
+      <div>
+        <p>かごめかごめ</p>
+       <button onclick="playKagomeKagome2(false, 1);">Click 8Bit 1</button>
+       <button onclick="playKagomeKagome2(false, 2);">Click 8Bit 2</button>
+       <button onclick="playKagomeKagome2(false, 3);">Click 8Bit 3</button>
+       <button onclick="playKagomeKagome2(true, 1);">Click 16Bit 1</button>
+       <button onclick="playKagomeKagome2(true, 2);">Click 16Bit 2</button>
+       <button onclick="playKagomeKagome2(true, 3);">Click 16Bit 3</button>
+      </div>
+      <div>
+        <p>シンプル</p>
+        <button onclick="playSimple(1);">Click</button>
+        <p>ハーモニー</p>
+        <button onclick="playHarmony(false, 1);">Click 8bit 1</button>
+        <button onclick="playHarmony(true, 1);">Click 16bit 1</button>
+        <button onclick="playHarmony(false, 2);">Click 8bit 2</button>
+        <button onclick="playHarmony(true, 2);">Click 16bit 2</button>
+        <button onclick="playHarmony(false, 3);">Click 8bit 3</button>
+        <button onclick="playHarmony(true, 3);">Click 16bit 3</button>
+      </div>
+      <div>
+          <p>きらきら星</p>
+          <button onclick="playKiraKira(true, true, false, false, 1);">Click 1</button>
+          <button onclick="playKiraKira(true, false, true, false, 1);">Click 2</button>
+          <button onclick="playKiraKira(true, false, false, true, 1);">Click 3</button>
+          <button onclick="playKiraKira(true, true, true, true, 1);">Click 1+2+3</button>
+          <button onclick="playKiraKira(false, true, true, true, 1);">Click 1+2+3 8Bit</button>
+          <button onclick="playKiraKira(true, true, true, true, 2);">Click 1+2+3 2</button>
+          <button onclick="playKiraKira(false, true, true, true, 2);">Click 1+2+3 8Bit 2</button>
+          <button onclick="playKiraKira(true, true, true, true, 3);">Click 1+2+3 3</button>
+          <button onclick="playKiraKira(false, true, true, true, 3);">Click 1+2+3 8Bit 3</button>
+      </div>
+      <div>
+          <p>テトリス</p>
+          <a href="https://pianojuku.info/free-sheet-beginner-5select/#i-2">https://pianojuku.info/free-sheet-beginner-5select/#i-2</a>
+          <button onclick="playTetris(true);">Click 1</button>
+      </div>
+    </body>
+</html>
+  
